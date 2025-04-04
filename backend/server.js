@@ -1,35 +1,29 @@
-import express from 'express'
-import cors from 'cors'
-import 'dotenv/config'
-import connectDB from './config/mongodb.js'
-import connectCloudinary from './config/cloudinary.js'
-import userModel from './models/userModel.js'
-import userRouter from './routes/userRoute.js'
-import productRouter from './routes/productRoute.js'
- 
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+require("dotenv").config();
+
+const returnRoutes = require("./routes/returnRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 
 
 
+const app = express();
 
-// app config
-const app =express()
-const port =process.env.PORT || 4000
+// Middleware
+app.use(express.json());
+app.use(cors());
 
-// middlewares
-app.use(express.json())
-app.use(cors())   // acces back end form any ip
-connectDB()
-connectCloudinary()// mekai uda ekai ain krnna
+// Database Connection
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => console.log("MongoDB Connected"))
+  .catch(err => console.log(err));
 
-//api endpoints
-app.use('/api/user',userRouter)
-app.use('/api/product',productRouter)
+// Routes
+app.use("/api/returns", returnRoutes);
+app.use("/api/orders", orderRoutes);
 
-
-
-
-app.get('/',(req,res)=>{
-    res.send("API Working")
-})
-
-app.listen(port,()=>console.log('Server Started on Port :'+port))
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
